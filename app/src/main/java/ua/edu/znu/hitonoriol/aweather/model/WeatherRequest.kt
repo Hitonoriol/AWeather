@@ -9,13 +9,15 @@ import ua.edu.znu.hitonoriol.aweather.model.data.WeatherForecast
 interface WeatherRequest {
     @GET("weather")
     fun fetchCurrent(@Query("appid") apiKey: String,
-                     @Query("lat") latitude: Float,
-                     @Query("lon") longitude: Float
+                     @Query("lat") latitude: Double,
+                     @Query("lon") longitude: Double,
+                     @Query("units") units: String = "metric"
     ): Call<WeatherForecast>
 
     @GET("forecast")
     fun fetchHourly(@Query("appid") apiKey: String,
-                    @Query("lat") latitude: Float,
-                    @Query("lon") longitude: Float
+                    @Query("lat") latitude: Double,
+                    @Query("lon") longitude: Double,
+                    @Query("units") units: String = "metric"
     ): Call<HourlyWeatherForecast>
 }

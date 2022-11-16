@@ -10,4 +10,7 @@ data class WeatherForecast(
     var visibility: Int? = null,
     var pop: Float? = null,
     var sys: Sys? = null
-)
+) {
+    val mainWeatherCondition: Weather?
+        get() = weather?.first()
+}
