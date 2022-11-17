@@ -1,13 +1,13 @@
 package ua.edu.znu.hitonoriol.aweather.model.data
 
 data class Main(
-    var temp: Float? = null,
-    var feels_like: Float? = null,
-    var temp_min: Float? = null,
-    var temp_max: Float? = null,
-    var pressure: Int? = null,
-    var sea_level: Int? = null,
-    var grnd_level: Int? = null,
-    var humidity: Int? = null,
-    var temp_kf: Float? = null
+    var temp: Float = 0f,
+    var feels_like: Float = 0f,
+    var temp_min: Float = 0f,
+    var temp_max: Float = 0f,
+    var pressure: Int = 0,
+    var sea_level: Int = 0,
+    var grnd_level: Int = 0,
+    var humidity: Int = 0,
+    var temp_kf: Float = 0f
 )

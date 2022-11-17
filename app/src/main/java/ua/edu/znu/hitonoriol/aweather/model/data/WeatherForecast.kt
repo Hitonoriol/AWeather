@@ -1,7 +1,7 @@
 package ua.edu.znu.hitonoriol.aweather.model.data
 
 data class WeatherForecast(
-    var dt: Long? = null,
+    var dt: Long = 0,
     var dt_txt: String? = null,
     var main: Main? = null,
     var weather: MutableList<Weather>? = null,

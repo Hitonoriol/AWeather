@@ -1,4 +1,5 @@
 <resources>
+    <string name="owm_api_key">f8abc1bf1c752be95c7d49812de0f066</string>
     <string name="app_name">AWeather</string>
     <string name="action_settings">Settings</string>
 </resources>
