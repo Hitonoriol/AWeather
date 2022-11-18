@@ -14,27 +14,36 @@
         android:scaleType="centerInside"
         app:srcCompat="@drawable/w01" />
 
-    <TextView
-        android:id="@+id/dayView"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Day" />
+        android:orientation="horizontal">
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/textsep" />
+        <TextView
+            android:id="@+id/dayView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Day"
+            android:textSize="@dimen/forecast_font_size" />
 
-    <TextView
-        android:id="@+id/dayConditionView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Weather condition" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/textsep" />
+
+        <TextView
+            android:id="@+id/dayConditionView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Weather condition"
+            android:textSize="@dimen/forecast_font_size" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/dayTempView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="0° / 0°"
-        android:textAlignment="textEnd" />
+        android:textAlignment="textEnd"
+        android:textSize="@dimen/forecast_font_size" />
 </TableRow>

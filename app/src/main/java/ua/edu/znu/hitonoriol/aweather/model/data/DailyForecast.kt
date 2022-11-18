@@ -1,5 +1,6 @@
 package ua.edu.znu.hitonoriol.aweather.model.data
 
+import ua.edu.znu.hitonoriol.aweather.util.TimeUtils
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -7,6 +8,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class DailyForecast(private val hourlyForecast: HourlyWeatherForecast) {
     val days: MutableMap<LocalDate, Day> = LinkedHashMap()
@@ -14,7 +16,7 @@ class DailyForecast(private val hourlyForecast: HourlyWeatherForecast) {
     init {
         for(entry in hourlyForecast.list!!) {
             println("* Hourly forecast entry: $entry")
-            val date = utcDate(entry.dt)
+            val date = TimeUtils.utcDate(entry.dt)
             if (!days.containsKey(date))
                 days[date] = Day(date)
             val day = days[date]!!
@@ -28,10 +30,6 @@ class DailyForecast(private val hourlyForecast: HourlyWeatherForecast) {
             if (entry.main!!.temp_max > day.maxTemp)
                 day.maxTemp = entry.main!!.temp_max
         }
-    }
-
-    private fun utcDate(seconds: Long) : LocalDate {
-        return LocalDateTime.ofInstant(Instant.ofEpochSecond(seconds), ZoneOffset.UTC).toLocalDate()
     }
 
     data class Day(
@@ -54,6 +52,9 @@ class DailyForecast(private val hourlyForecast: HourlyWeatherForecast) {
             get() = primaryWeatherCondition!!.icon!!
 
         fun getString() : String {
+            if (TimeUtils.utcDate(System.currentTimeMillis() / 1000) == date)
+                return "Today"
+
             return "${date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${date.dayOfMonth}"
         }
     }

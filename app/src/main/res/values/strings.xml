@@ -2,4 +2,12 @@
     <string name="owm_api_key">f8abc1bf1c752be95c7d49812de0f066</string>
     <string name="app_name">AWeather</string>
     <string name="action_settings">Settings</string>
+
+    <string name="temp">%.0f °C</string>
+    <string name="temp_short">%.0f°</string>
+    <string name="temp_min_max">%.0f° / %.0f°</string>
+
+    <string name="pressure">%d hPa</string>
+    <string name="wind_speed">%.1f m/s</string>
+    <string name="humidity">%d%%</string>
 </resources>

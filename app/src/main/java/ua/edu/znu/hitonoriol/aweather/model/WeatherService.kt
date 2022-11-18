@@ -47,7 +47,17 @@ class WeatherService (private val apiKey: String, private val context: Context) 
         println("* Weather update failed")
     }
 
-    private fun update(onSuccess: () -> Unit, onFailure: () -> Unit = {}) {
+    private fun needsUpdate(): Boolean {
+        return currentWeather == null
+    }
+
+    fun update(onSuccess: (WeatherForecast, HourlyWeatherForecast, DailyForecast) -> Unit,
+               onFailure: () -> Unit = {}) {
+        if (!needsUpdate()) {
+            onSuccess(currentWeather!!, hourlyForecast!!, dailyForecast!!)
+            return
+        }
+
         fetchCurrentWeather()
             .execute({ weather ->
                 if (weather == null) {
@@ -64,7 +74,7 @@ class WeatherService (private val apiKey: String, private val context: Context) 
                         lastUpdate = System.currentTimeMillis()
                         hourlyForecast = forecast
                         dailyForecast = DailyForecast(hourlyForecast!!)
-                        onSuccess()
+                        onSuccess(currentWeather!!, hourlyForecast!!, dailyForecast!!)
                     }
                 })
             })
@@ -76,25 +86,5 @@ class WeatherService (private val apiKey: String, private val context: Context) 
 
     private fun fetchCurrentWeather(): Call<WeatherForecast> {
         return service.fetchCurrent(apiKey, latitude, longitude)
-    }
-
-    private fun <T> getOrUpdate(getter: () -> T?, consumer: (T) -> Unit) {
-        val value = getter()
-        if (value == null)
-            update({ consumer(getter()!!) })
-        else
-            consumer(value)
-    }
-
-    fun getCurrentWeather(action: (WeatherForecast) -> Unit) {
-        getOrUpdate({ currentWeather }, action)
-    }
-
-    fun getDailyForecast(action: (DailyForecast) -> Unit) {
-        getOrUpdate({ dailyForecast }, action)
-    }
-
-    fun getHourlyForecast(action: (HourlyWeatherForecast) -> Unit) {
-        getOrUpdate({ hourlyForecast }, action)
     }
 }
