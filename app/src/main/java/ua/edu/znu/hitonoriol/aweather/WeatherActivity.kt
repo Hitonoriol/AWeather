@@ -112,10 +112,10 @@ class WeatherActivity : AppCompatActivity() {
      */
     private fun refresh() {
         Snackbar.make(binding.root, "Refreshing weather data...", Snackbar.LENGTH_LONG).show()
-        weatherService.update({ current, hourly, daily ->
-            refreshCurrentWeather(current)
-            refreshHourlyForecast(hourly)
-            refreshDailyForecast(daily)
+        weatherService.update({ weather ->
+            refreshCurrentWeather(weather.currentForecast!!)
+            refreshHourlyForecast(weather.hourlyForecast!!)
+            refreshDailyForecast(weather.dailyForecast!!)
             Snackbar.make(binding.root, "Weather data updated!", Snackbar.LENGTH_LONG).show()
         })
     }

@@ -9,6 +9,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import ua.edu.znu.hitonoriol.aweather.model.data.DailyForecast
 import ua.edu.znu.hitonoriol.aweather.model.data.HourlyWeatherForecast
 import ua.edu.znu.hitonoriol.aweather.model.data.WeatherForecast
+import ua.edu.znu.hitonoriol.aweather.persist.LocalWeather
+import ua.edu.znu.hitonoriol.aweather.persist.WeatherDatabase
 import ua.edu.znu.hitonoriol.aweather.util.execute
 
 class WeatherService (private val apiKey: String, private val context: Context) {
@@ -18,27 +20,18 @@ class WeatherService (private val apiKey: String, private val context: Context) 
         .build()
     private val service = retrofit.create(WeatherRequest::class.java)
     private val geocoder = Geocoder(context)
+    private val db = WeatherDatabase.initialize(context)
 
-    private var latitude: Double = 0.0
-    private var longitude: Double = 0.0
-    var cityName: String = ""
-    var countryName: String = ""
-
-    private var lastUpdate: Long = 0
-    private var currentWeather: WeatherForecast? = null
-    private var dailyForecast: DailyForecast? = null
-    private var hourlyForecast: HourlyWeatherForecast? = null
+    private val weather = LocalWeather()
+    val cityName: String
+        get() = weather.city
 
     fun setLocation(latitude: Double, longitude: Double) {
-        this.latitude = latitude
-        this.longitude = longitude
         val locationList = geocoder.getFromLocation(latitude, longitude, 1)
         if (locationList != null && locationList.isNotEmpty()) {
             val location = locationList.first()
-            countryName = location.countryName
-            cityName =  location.locality
-            currentWeather = null
-            hourlyForecast = null
+            weather.setLocation(location.locality, location.countryName, latitude, longitude)
+            weather.invalidate()
         }
     }
 
@@ -48,13 +41,13 @@ class WeatherService (private val apiKey: String, private val context: Context) 
     }
 
     private fun needsUpdate(): Boolean {
-        return currentWeather == null
+        return !weather.valid
     }
 
-    fun update(onSuccess: (WeatherForecast, HourlyWeatherForecast, DailyForecast) -> Unit,
+    fun update(onSuccess: (LocalWeather) -> Unit,
                onFailure: () -> Unit = {}) {
         if (!needsUpdate()) {
-            onSuccess(currentWeather!!, hourlyForecast!!, dailyForecast!!)
+            onSuccess(this.weather)
             return
         }
 
@@ -65,26 +58,27 @@ class WeatherService (private val apiKey: String, private val context: Context) 
                     onFailure()
                     return@execute
                 }
-                currentWeather = weather
+                this.weather.currentForecast = weather
                 fetchHourlyForecast().execute({ forecast ->
                     if (forecast == null) {
                         updateFailed()
                         onFailure()
                     } else {
-                        lastUpdate = System.currentTimeMillis()
-                        hourlyForecast = forecast
-                        dailyForecast = DailyForecast(hourlyForecast!!)
-                        onSuccess(currentWeather!!, hourlyForecast!!, dailyForecast!!)
+                        this.weather.lastUpdate = System.currentTimeMillis()
+                        this.weather.hourlyForecast = forecast
+                        this.weather.dailyForecast = DailyForecast(forecast)
+                        db.weatherDao().persist(this.weather)
+                        onSuccess(this.weather)
                     }
                 })
             })
     }
 
     private fun fetchHourlyForecast(): Call<HourlyWeatherForecast> {
-        return service.fetchHourly(apiKey, latitude, longitude)
+        return service.fetchHourly(apiKey, weather.latitude, weather.longitude)
     }
 
     private fun fetchCurrentWeather(): Call<WeatherForecast> {
-        return service.fetchCurrent(apiKey, latitude, longitude)
+        return service.fetchCurrent(apiKey, weather.latitude, weather.longitude)
     }
 }

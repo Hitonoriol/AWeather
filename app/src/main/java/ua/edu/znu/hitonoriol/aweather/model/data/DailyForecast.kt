@@ -1,5 +1,6 @@
 package ua.edu.znu.hitonoriol.aweather.model.data
 
+import androidx.room.Entity
 import ua.edu.znu.hitonoriol.aweather.util.TimeUtils
 import java.time.Instant
 import java.time.LocalDate
@@ -46,10 +47,10 @@ class DailyForecast(private val hourlyForecast: HourlyWeatherForecast) {
             }
 
         val weatherDescription: String
-            get() = primaryWeatherCondition!!.description!!
+            get() = primaryWeatherCondition!!.description
 
         val weatherIcon: String
-            get() = primaryWeatherCondition!!.icon!!
+            get() = primaryWeatherCondition!!.icon
 
         fun getString() : String {
             if (TimeUtils.utcDate(System.currentTimeMillis() / 1000) == date)
