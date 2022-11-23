@@ -27,7 +27,7 @@ class DailyForecast(hourlyForecast: HourlyWeatherForecast? = null) {
     private fun generateForecast(hourlyForecast: HourlyWeatherForecast) {
         for(entry in hourlyForecast.list!!) {
             Log.i("","* Hourly forecast entry: $entry")
-            val date = TimeUtils.utcDate(entry.dt)
+            val date = TimeUtils.utcDateTime(entry.dt).toLocalDate()
             if (!days.containsKey(date))
                 days[date] = Day(date)
             val day = days[date]!!
@@ -66,7 +66,7 @@ class DailyForecast(hourlyForecast: HourlyWeatherForecast? = null) {
             get() = primaryWeatherCondition!!.icon
 
         fun getString() : String {
-            if (TimeUtils.utcDate(System.currentTimeMillis() / 1000) == date)
+            if (TimeUtils.localDate(System.currentTimeMillis() / 1000) == date)
                 return "Today"
 
             return "${date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${date.dayOfMonth}"
