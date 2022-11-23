@@ -10,7 +10,7 @@ class TimeUtils {
     companion object {
         private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
-        private fun localDateTime(
+        fun localDateTime(
             seconds: Long,
             timeZone: ZoneId = ZoneId.systemDefault()
         ): LocalDateTime {

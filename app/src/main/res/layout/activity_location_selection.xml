@@ -6,35 +6,32 @@
     android:layout_height="match_parent"
     tools:context=".LocationSelectionActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/Theme.AWeather.AppBarOverlay">
+        android:orientation="vertical">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+        <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/Theme.AWeather.PopupOverlay" />
+            android:layout_height="wrap_content"
+            android:theme="@style/Theme.AWeather.AppBarOverlay">
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <fragment android:id="@+id/autocomplete_fragment"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
-                    tools:layout="@layout/places_autocomplete_fragment" />
-            </LinearLayout>
-        </ScrollView>
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                app:popupTheme="@style/Theme.AWeather.PopupOverlay" />
 
-    </com.google.android.material.appbar.AppBarLayout>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <fragment
+            android:id="@+id/autocomplete_fragment"
+            android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout="@layout/places_autocomplete_fragment" />
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
@@ -43,7 +40,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="16dp"
-        app:srcCompat="@android:drawable/ic_menu_mylocation"
-        android:contentDescription="@string/gps_button_description" />
+        android:contentDescription="@string/gps_button_description"
+        app:srcCompat="@android:drawable/ic_menu_mylocation" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

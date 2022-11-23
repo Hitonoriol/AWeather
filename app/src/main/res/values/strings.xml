@@ -19,5 +19,7 @@
     <string name="wind_speed">%.1f m/s</string>
     <string name="humidity">%d%%</string>
 
+    <string name="time_now">Now</string>
+
     <string name="gps_button_description">GPS location button</string>
 </resources>

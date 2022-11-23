@@ -34,9 +34,10 @@
       android:paddingLeft="@dimen/places_autocomplete_search_input_padding"
       android:paddingRight="@dimen/places_autocomplete_search_input_padding"
       android:singleLine="true"
-      android:textColor="@color/white"
+      android:textColor="@color/black"
       android:textColorHint="@color/places_autocomplete_search_hint"
-      android:textSize="@dimen/places_autocomplete_search_input_text" />
+      android:textSize="@dimen/places_autocomplete_search_input_text"
+      android:autofillHints="" />
 
   <ImageButton
       android:id="@+id/places_autocomplete_clear_button"

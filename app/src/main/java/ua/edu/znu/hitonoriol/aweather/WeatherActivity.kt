@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
@@ -21,6 +22,7 @@ import ua.edu.znu.hitonoriol.aweather.model.data.WeatherForecast
 import ua.edu.znu.hitonoriol.aweather.util.TimeUtils
 import ua.edu.znu.hitonoriol.aweather.util.capitalizeFirst
 import ua.edu.znu.hitonoriol.aweather.util.getStringPreference
+import java.time.LocalDateTime
 import java.time.format.TextStyle
 import java.util.*
 
@@ -62,7 +64,7 @@ class WeatherActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId) {
+        return when (item.itemId) {
             R.id.locationBtn -> {
                 switchToLocationSelection()
                 return true
@@ -70,9 +72,11 @@ class WeatherActivity : AppCompatActivity() {
             R.id.resetAppBtn -> {
                 lifecycleScope.launch(Dispatchers.IO) {
                     weatherService.reset()
-                    Snackbar.make(binding.root,
+                    Snackbar.make(
+                        binding.root,
                         "Reset application database and preferences successfully!",
-                        Snackbar.LENGTH_LONG).show()
+                        Snackbar.LENGTH_LONG
+                    ).show()
                 }
                 return true
             }
@@ -101,7 +105,7 @@ class WeatherActivity : AppCompatActivity() {
         weatherService.update({ weather ->
             runOnUiThread {
                 refreshCurrentWeather(weather.currentForecast!!)
-                refreshHourlyForecast(weather.hourlyForecast!!)
+                refreshHourlyForecast(weather.currentForecast!!, weather.hourlyForecast!!)
                 refreshDailyForecast(weather.dailyForecast!!)
                 Snackbar.make(binding.root, "Weather data updated!", Snackbar.LENGTH_LONG).show()
             }
@@ -113,7 +117,7 @@ class WeatherActivity : AppCompatActivity() {
      */
     private fun getWeatherIcon(name: String): Int {
         val iconName = "w${name.dropLast(1)}"
-        return resources.getIdentifier(iconName,"drawable", packageName)
+        return resources.getIdentifier(iconName, "drawable", packageName)
     }
 
     /**
@@ -151,22 +155,44 @@ class WeatherActivity : AppCompatActivity() {
     /**
      * Update the hourly forecast card using the `HourlyWeatherForecast` instance.
      */
-    private fun refreshHourlyForecast(forecast: HourlyWeatherForecast) {
+    private fun refreshHourlyForecast(now: WeatherForecast, forecast: HourlyWeatherForecast) {
         val container = binding.hourlyForecastContainer
         container.removeAllViews()
-        var prevDay = TimeUtils.localDate(System.currentTimeMillis() / 1000)
+        addHourCard(container, now)
+        val currentTime = TimeUtils.localDateTime(System.currentTimeMillis() / 1000)
+        var prevDay = currentTime.toLocalDate()
         forecast.list?.forEach { hourEntry ->
             val time = TimeUtils.utcDateTime(hourEntry.dt)
+            if (currentTime.isAfter(time))
+                return@forEach
+
             val day = time.toLocalDate()
             if (day != prevDay) {
                 val divider = HourlyForecastDividerBinding.inflate(layoutInflater, container, true)
-                divider.dividerTextView.text = day.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+                divider.dividerTextView.text =
+                    day.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
             }
-            val hourCard = HourlyForecastCardBinding.inflate(layoutInflater, container, true)
-            hourCard.hourlyTempView.text = getString(R.string.temp_short, hourEntry.main?.temp)
-            hourCard.weatherIcon.setImageResource(getWeatherIcon(hourEntry.mainWeatherCondition.icon))
-            hourCard.hourlyDayView.text = TimeUtils.timeString(time.toLocalTime())
+            addHourCard(container, hourEntry, time)
             prevDay = day
         }
+    }
+
+    /**
+     * Add a single hourly weather data card into a `container` LinearLayout and populate it with
+     * data from a WeatherForecast instance.
+     */
+    private fun addHourCard(
+        container: LinearLayout,
+        hourEntry: WeatherForecast,
+        time: LocalDateTime? = null
+    ) {
+        val hourCard = HourlyForecastCardBinding.inflate(layoutInflater, container, true)
+        hourCard.hourlyTempView.text = getString(R.string.temp_short, hourEntry.main?.temp)
+        hourCard.weatherIcon.setImageResource(getWeatherIcon(hourEntry.mainWeatherCondition.icon))
+        hourCard.hourlyDayView.text =
+            if (time != null)
+                TimeUtils.timeString(time.toLocalTime())
+            else
+                getString(R.string.time_now)
     }
 }
