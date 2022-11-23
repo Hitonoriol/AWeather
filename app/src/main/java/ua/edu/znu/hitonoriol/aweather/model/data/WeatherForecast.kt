@@ -7,18 +7,13 @@ data class WeatherForecast(
     var dt: Long = 0,
     var dt_txt: String? = null,
     var main: Main? = null,
+    var weather: MutableList<Weather>? = null,
     var clouds: Clouds? = null,
     var wind: Wind? = null,
     var visibility: Int? = null,
     var pop: Float? = null,
     var sys: Sys? = null
 ) {
-    var mainWeatherCondition: Weather? = null
-
-    @Ignore
-    var weather: MutableList<Weather>? = null
-        set(value) {
-            field = value
-            mainWeatherCondition = weather?.first()
-        }
+    val mainWeatherCondition: Weather
+        get() = weather?.first()!!
 }

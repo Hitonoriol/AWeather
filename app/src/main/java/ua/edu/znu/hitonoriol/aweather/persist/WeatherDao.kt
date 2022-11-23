@@ -8,13 +8,16 @@ import androidx.room.Query
 @Dao
 interface WeatherDao {
     @Query("SELECT * FROM weather")
-    fun getAll(): List<LocalWeather>
+    suspend fun getAll(): List<LocalWeather>
 
     @Query("SELECT * FROM weather WHERE " +
             "city LIKE :city AND " +
             "country LIKE :country LIMIT 1")
-    fun findByLocation(city: String, country: String): LocalWeather
+    suspend fun findByLocation(city: String, country: String): LocalWeather?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun persist(localWeather: LocalWeather)
+    suspend fun persist(localWeather: LocalWeather)
+
+    @Query("DELETE FROM weather")
+    suspend fun purge()
 }
