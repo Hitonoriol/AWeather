@@ -29,7 +29,9 @@ import ua.edu.znu.hitonoriol.aweather.util.getStringPreference
 import ua.edu.znu.hitonoriol.aweather.util.putDouble
 import java.util.*
 
-
+/**
+ * Activity for selecting a city to retrieve weather data for.
+ */
 class LocationSelectionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLocationSelectionBinding
     private lateinit var locationClient: FusedLocationProviderClient
@@ -54,6 +56,9 @@ class LocationSelectionActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Fill Places autocomplete text field with the previously selected city (if any).
+     */
     private fun restoreSavedLocation() {
         val city = getStringPreference(R.string.pref_city)
         val country = getStringPreference(R.string.pref_country)
@@ -63,6 +68,10 @@ class LocationSelectionActivity : AppCompatActivity() {
         locationFragment.setText("$city, $country")
     }
 
+    /**
+     * Save the specified `latitude` and `longitude` with country and city name associated with
+     * the specified coordinates to SharedPreferences.
+     */
     private fun saveLocation(latitude: Double, longitude: Double) {
         val locationList = geocoder.getFromLocation(latitude, longitude, 1)
         if (locationList == null || locationList.isEmpty()) {
@@ -100,6 +109,10 @@ class LocationSelectionActivity : AppCompatActivity() {
             Manifest.permission.ACCESS_COARSE_LOCATION))
     }
 
+    /**
+     * Get current longitude and latitude from the android location API and pass it to
+     * the `action` consumer.
+     */
     private fun getCurrentLocation(action: (Double, Double) -> Unit) {
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -123,6 +136,9 @@ class LocationSelectionActivity : AppCompatActivity() {
             }
     }
 
+    /**
+     * Initialize Google Places API autocomplete fragment.
+     */
     private fun initLocationAutocomplete() {
         if (!Places.isInitialized())
             Places.initialize(applicationContext, getString(R.string.google_maps_api_key), Locale.getDefault())

@@ -1,8 +1,8 @@
 package ua.edu.znu.hitonoriol.aweather.model.data
 
-import androidx.room.Entity
-import androidx.room.Ignore
-
+/**
+ * Represents the root object of the `current` (WeatherRequest#fetchCurrent()) API method response.
+ */
 data class WeatherForecast(
     var dt: Long = 0,
     var dt_txt: String? = null,

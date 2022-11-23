@@ -8,7 +8,8 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import ua.edu.znu.hitonoriol.aweather.databinding.ActivityWeatherBinding
 import ua.edu.znu.hitonoriol.aweather.databinding.DayForecastRowBinding
 import ua.edu.znu.hitonoriol.aweather.databinding.HourlyForecastCardBinding
@@ -19,11 +20,13 @@ import ua.edu.znu.hitonoriol.aweather.model.data.HourlyWeatherForecast
 import ua.edu.znu.hitonoriol.aweather.model.data.WeatherForecast
 import ua.edu.znu.hitonoriol.aweather.util.TimeUtils
 import ua.edu.znu.hitonoriol.aweather.util.capitalizeFirst
-import ua.edu.znu.hitonoriol.aweather.util.getPrefs
 import ua.edu.znu.hitonoriol.aweather.util.getStringPreference
 import java.time.format.TextStyle
 import java.util.*
 
+/**
+ * Application's main activity. Displays weather data for the currently selected city.
+ */
 class WeatherActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWeatherBinding
     private lateinit var weatherService: WeatherService
@@ -41,10 +44,10 @@ class WeatherActivity : AppCompatActivity() {
         Log.d(localClassName, "Weather onResume()")
         val country = getStringPreference(R.string.pref_country)
         val city = getStringPreference(R.string.pref_city)
-        if (country == null || city == null) {
+        if (country == null || city == null) { // Detect first launch
             Log.i(localClassName, "First launch! Switching to location selection activity.")
             switchToLocationSelection()
-        } else {
+        } else { // Restore weather data associated with the saved location and populate current layout with it.
             Log.i(localClassName, "Restoring saved location from previous launch...")
             lifecycleScope.launch(Dispatchers.IO) {
                 weatherService.restoreLocation()
@@ -81,6 +84,9 @@ class WeatherActivity : AppCompatActivity() {
         startActivity(Intent(this, LocationSelectionActivity::class.java))
     }
 
+    /**
+     * Set toolbar's title in collapsed and expanded modes to the specified `name`.
+     */
     private fun setCityName(name: String) {
         binding.cityNameView.text = name
         binding.toolbarLayout.title = name
@@ -88,6 +94,7 @@ class WeatherActivity : AppCompatActivity() {
 
     /**
      * Request an update from `weatherService` and update all views with retrieved weather data.
+     * Old data may be reused (without making any API requests) if it's still valid.
      */
     private fun refresh() {
         Snackbar.make(binding.root, "Refreshing weather data...", Snackbar.LENGTH_LONG).show()
@@ -102,7 +109,15 @@ class WeatherActivity : AppCompatActivity() {
     }
 
     /**
-     * Update current weather info in collapsible title layout using the `weather` instance.
+     * Retrieve resource id of the icon corresponding to the icon code returned by Openweathermap API.
+     */
+    private fun getWeatherIcon(name: String): Int {
+        val iconName = "w${name.dropLast(1)}"
+        return resources.getIdentifier(iconName,"drawable", packageName)
+    }
+
+    /**
+     * Update current weather info in collapsible title layout using the `WeatherForecast` instance.
      */
     private fun refreshCurrentWeather(weather: WeatherForecast) {
         Log.d(localClassName, "Populating current weather layout with: $weather")
@@ -116,11 +131,9 @@ class WeatherActivity : AppCompatActivity() {
         binding.humidityView.text = getString(R.string.humidity, weather.main?.humidity)
     }
 
-    private fun getWeatherIcon(name: String): Int {
-        val iconName = "w${name.dropLast(1)}"
-        return resources.getIdentifier(iconName,"drawable", packageName)
-    }
-
+    /**
+     * Update the daily forecast card using the `DailyForecast` instance.
+     */
     private fun refreshDailyForecast(forecast: DailyForecast) {
         val table = binding.dailyForecastTable
         table.removeAllViews()
@@ -135,6 +148,9 @@ class WeatherActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Update the hourly forecast card using the `HourlyWeatherForecast` instance.
+     */
     private fun refreshHourlyForecast(forecast: HourlyWeatherForecast) {
         val container = binding.hourlyForecastContainer
         container.removeAllViews()

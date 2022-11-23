@@ -1,5 +1,8 @@
 package ua.edu.znu.hitonoriol.aweather.model.data
 
+/**
+ * Represents the `main` object of the `forecast5` and `current` API method responses.
+ */
 data class Main(
     var temp: Float = 0f,
     var feels_like: Float = 0f,

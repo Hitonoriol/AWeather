@@ -1,14 +1,15 @@
 package ua.edu.znu.hitonoriol.aweather.persist
 
 import androidx.room.TypeConverter
-import com.google.gson.*
+import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import ua.edu.znu.hitonoriol.aweather.model.data.DailyForecast
 import ua.edu.znu.hitonoriol.aweather.model.data.HourlyWeatherForecast
 import ua.edu.znu.hitonoriol.aweather.model.data.WeatherForecast
-import java.lang.reflect.Type
-import java.time.LocalDate
 
+/**
+ * A simple JSON converter for the internal weather forecast objects of `LocalWeather` entities.
+ */
 open class WeatherDataConverter {
     companion object {
         private val gson = GsonBuilder()

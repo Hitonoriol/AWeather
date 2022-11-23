@@ -3,11 +3,17 @@ package ua.edu.znu.hitonoriol.aweather.util
 import java.time.*
 import java.time.format.DateTimeFormatter
 
+/**
+ * Time formatting and conversion utils.
+ */
 class TimeUtils {
     companion object {
-        val formatter = DateTimeFormatter.ofPattern("HH:mm")
+        private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
-        fun localDateTime(seconds: Long, timeZone: ZoneId = ZoneId.systemDefault()): LocalDateTime {
+        private fun localDateTime(
+            seconds: Long,
+            timeZone: ZoneId = ZoneId.systemDefault()
+        ): LocalDateTime {
             return LocalDateTime.ofInstant(Instant.ofEpochSecond(seconds), timeZone)
         }
 

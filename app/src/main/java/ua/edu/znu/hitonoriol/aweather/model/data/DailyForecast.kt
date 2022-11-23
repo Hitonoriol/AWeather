@@ -1,17 +1,14 @@
 package ua.edu.znu.hitonoriol.aweather.model.data
 
 import android.util.Log
-import androidx.room.Entity
 import ua.edu.znu.hitonoriol.aweather.util.TimeUtils
-import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
 import java.time.format.TextStyle
-import java.util.Locale
-import kotlin.math.roundToInt
+import java.util.*
 
+/**
+ * Encapsulates a map of forecasts for each unique day from an `HourlyWeatherForecast` object.
+ */
 class DailyForecast(hourlyForecast: HourlyWeatherForecast? = null) {
     var days: MutableMap<LocalDate, Day> = LinkedHashMap()
 
@@ -20,6 +17,13 @@ class DailyForecast(hourlyForecast: HourlyWeatherForecast? = null) {
             generateForecast(hourlyForecast)
     }
 
+    /**
+     * Generate daily forecasts where:
+     *  1. Minimum temperature for the day is the minimum of all hourly minimums for that day.
+     *  2. Maximum temperature for the day is the maximum of all hourly maximums for that day.
+     *  3. Weather condition for the day is the most frequently encountered weather condition
+     *     of all hourly conditions for that day.
+     */
     private fun generateForecast(hourlyForecast: HourlyWeatherForecast) {
         for(entry in hourlyForecast.list!!) {
             Log.i("","* Hourly forecast entry: $entry")
@@ -39,6 +43,9 @@ class DailyForecast(hourlyForecast: HourlyWeatherForecast? = null) {
         }
     }
 
+    /**
+     * Represents a daily weather forecast.
+     */
     data class Day(
         val date: LocalDate,
         val weather: MutableMap<Weather, Int> = HashMap(),

@@ -1,11 +1,13 @@
 package ua.edu.znu.hitonoriol.aweather.persist
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import ua.edu.znu.hitonoriol.aweather.model.data.DailyForecast
 import ua.edu.znu.hitonoriol.aweather.model.data.HourlyWeatherForecast
 import ua.edu.znu.hitonoriol.aweather.model.data.WeatherForecast
-
+/**
+ * Represents the latest weather data for the location specified by `city` and `country` names.
+ * Only one instance is stored in the database for each unique location.
+ */
 @Entity(tableName = "weather", primaryKeys = ["city", "country"])
 data class LocalWeather(
     var city: String = "",
