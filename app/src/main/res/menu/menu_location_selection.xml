@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="ua.edu.znu.hitonoriol.aweather.LocationSelectionActivity">
+
+    <item
+        android:id="@+id/loginOption"
+        android:title="Login"
+        app:showAsAction="ifRoom" />
+</menu>

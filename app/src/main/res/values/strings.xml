@@ -1,6 +1,10 @@
 <resources>
     <string name="owm_api_key">f8abc1bf1c752be95c7d49812de0f066</string>
     <string name="google_maps_api_key">AIzaSyAYNh88oV6MRxWDMfPpdUQbvGDZ5trC_Nk</string>
+    <string name="google_auth_client_id">886306895869-3rnf39p8262bhc0uasmeabcdjr4ajpvb.apps.googleusercontent.com</string>
+    <string name="facebook_app_id">865168104660452</string>
+    <string name="fb_login_protocol_scheme">fb865168104660452</string>
+    <string name="facebook_client_token">ca0f480196c90fa373fe2916984133db</string>
 
     <string name="preferences">ua.edu.znu.hitonoriol.aweather.preferences</string>
     <string name="pref_city">last_city</string>

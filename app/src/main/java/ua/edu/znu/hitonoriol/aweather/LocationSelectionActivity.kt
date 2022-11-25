@@ -1,11 +1,14 @@
 package ua.edu.znu.hitonoriol.aweather
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -48,6 +51,7 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mapFragment: SupportMapFragment
     private var gMap: GoogleMap? = null
+
     companion object {
         private const val maxZoom = 11f
         private const val cityZoom = 10f
@@ -63,7 +67,7 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         binding = ActivityLocationSelectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        requestLocationPermissions()
+        setSupportActionBar(binding.locSelToolbar)
         locationClient = LocationServices.getFusedLocationProviderClient(this)
         geocoder = Geocoder(this)
         mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -85,6 +89,11 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_location_selection, menu)
+        return true
+    }
+
     override fun onMapReady(map: GoogleMap) {
         gMap = map
         val settings = gMap!!.uiSettings
@@ -93,6 +102,20 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
         settings.isIndoorLevelPickerEnabled = false
         gMap?.setMaxZoomPreference(maxZoom)
         gMap?.setOnMapClickListener { panMapTo(it) }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.loginOption -> {
+                switchToLoginActivity()
+                return true
+            }
+            else -> false
+        }
+    }
+
+    private fun switchToLoginActivity() {
+        startActivity(Intent(this, LoginActivity::class.java))
     }
 
     /**

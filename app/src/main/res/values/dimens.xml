@@ -6,6 +6,7 @@
     <dimen name="icon_size">32dp</dimen>
     <dimen name="forecast_font_size">18sp</dimen>
     <dimen name="hourly_forecast_font_size">14sp</dimen>
+    <dimen name="card_corner_radius">10dp</dimen>
     <dimen name="card_margin">5dp</dimen>
     <dimen name="card_content_padding">8dp</dimen>
 </resources>
