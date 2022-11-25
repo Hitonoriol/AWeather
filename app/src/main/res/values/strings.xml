@@ -14,6 +14,7 @@
 
     <string name="app_name">AWeather</string>
     <string name="city_field_hint">Enter location</string>
+    <string name="last_update">Last update: %s %s</string>
 
     <string name="temp">%.0f °C</string>
     <string name="temp_short">%.0f°</string>
@@ -24,6 +25,7 @@
     <string name="humidity">%d%%</string>
 
     <string name="time_now">Now</string>
+    <string name="card_details">Details</string>
 
     <string name="gps_button_description">GPS location button</string>
 </resources>

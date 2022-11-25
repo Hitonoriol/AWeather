@@ -2,6 +2,7 @@ package ua.edu.znu.hitonoriol.aweather.util
 
 import java.time.*
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 /**
  * Time formatting and conversion utils.
@@ -9,6 +10,7 @@ import java.time.format.DateTimeFormatter
 class TimeUtils {
     companion object {
         private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+        private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
         fun localDateTime(
             seconds: Long,
@@ -17,20 +19,24 @@ class TimeUtils {
             return LocalDateTime.ofInstant(Instant.ofEpochSecond(seconds), timeZone)
         }
 
-        fun localDate(seconds: Long, timeZone: ZoneId = ZoneId.systemDefault()): LocalDate {
-            return localDateTime(seconds, timeZone).toLocalDate()
-        }
-
         fun utcDateTime(seconds: Long): LocalDateTime {
             return localDateTime(seconds, ZoneOffset.UTC)
-        }
-
-        fun utcDate(seconds: Long): LocalDate {
-            return localDate(seconds, ZoneOffset.UTC)
         }
 
         fun timeString(time: LocalTime): String {
             return formatter.format(time)
         }
+
+        fun utcToLocalTimeString(utcSeconds: Long): String {
+            return timeString(utcDateTime(utcSeconds).toLocalZone().toLocalTime())
+        }
+
+        fun dateString(date: LocalDate): String {
+            return dateFormatter.format(date)
+        }
     }
+}
+
+fun LocalDateTime.toLocalZone(): LocalDateTime {
+    return atZone(ZoneId.systemDefault()).toLocalDateTime()
 }

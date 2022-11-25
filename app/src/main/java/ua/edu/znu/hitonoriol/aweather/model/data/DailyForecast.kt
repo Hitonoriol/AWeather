@@ -2,7 +2,9 @@ package ua.edu.znu.hitonoriol.aweather.model.data
 
 import android.util.Log
 import ua.edu.znu.hitonoriol.aweather.util.TimeUtils
+import ua.edu.znu.hitonoriol.aweather.util.toLocalZone
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.*
 
@@ -27,7 +29,7 @@ class DailyForecast(hourlyForecast: HourlyWeatherForecast? = null) {
     private fun generateForecast(hourlyForecast: HourlyWeatherForecast) {
         for(entry in hourlyForecast.list!!) {
             Log.i("","* Hourly forecast entry: $entry")
-            val date = TimeUtils.utcDateTime(entry.dt).toLocalDate()
+            val date = TimeUtils.utcDateTime(entry.dt).toLocalZone().toLocalDate()
             if (!days.containsKey(date))
                 days[date] = Day(date)
             val day = days[date]!!
@@ -66,7 +68,7 @@ class DailyForecast(hourlyForecast: HourlyWeatherForecast? = null) {
             get() = primaryWeatherCondition!!.icon
 
         fun getString() : String {
-            if (TimeUtils.localDate(System.currentTimeMillis() / 1000) == date)
+            if (TimeUtils.localDateTime(System.currentTimeMillis() / 1000).toLocalDate() == date)
                 return "Today"
 
             return "${date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${date.dayOfMonth}"

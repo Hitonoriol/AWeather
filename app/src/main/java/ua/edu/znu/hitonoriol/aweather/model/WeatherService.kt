@@ -34,20 +34,27 @@ class WeatherService(private val apiKey: String, private val context: Context) {
     private var weather = LocalWeather()
     val cityName: String
         get() = weather.city
+    val countryName: String
+        get() = weather.country
+    val lastUpdate: Long
+        get() = weather.lastUpdate
 
     /**
      * Restore the last saved location and initialize the `weather: LocalWeather` instance.
+     * Accepts and optional `oldDataConsumer` that will be called if any previously fetched
+     * weather data exists for stored location.
      */
-    suspend fun restoreLocation() = coroutineScope {
+    suspend fun restoreLocation(oldDataConsumer: (LocalWeather) -> Unit = {}) = coroutineScope {
         val city = context.getStringPreference(R.string.pref_city)!!
         val country = context.getStringPreference(R.string.pref_country)!!
 
         /* Restore previously fetched weather data from the database, if it exists.
          * Otherwise, only set `weather`'s location to the saved one. */
         val previousWeather = db.weatherDao().findByLocation(city, country)
-        if (previousWeather != null)
+        if (previousWeather != null) {
             weather = previousWeather
-        else {
+            oldDataConsumer(weather)
+        } else {
             val latitude = context.getDoublePreference(R.string.pref_lat)
             val longitude = context.getDoublePreference(R.string.pref_lon)
             weather.setLocation(city, country, latitude, longitude)
