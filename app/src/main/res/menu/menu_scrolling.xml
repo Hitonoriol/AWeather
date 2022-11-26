@@ -4,7 +4,7 @@
     tools:context="ua.edu.znu.hitonoriol.aweather.WeatherActivity">
     <item
         android:id="@+id/locationBtn"
-        android:icon="@android:drawable/ic_menu_mylocation"
+        android:icon="@drawable/icon_location"
         android:title="Select location"
         app:showAsAction="ifRoom" />
     <item
