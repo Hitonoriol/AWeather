@@ -265,7 +265,7 @@ class WeatherActivity : AppCompatActivity() {
             if (day != prevDay) {
                 val divider = HourlyForecastDividerBinding.inflate(layoutInflater, container, true)
                 divider.dividerTextView.text =
-                    day.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+                    day.dayOfWeek.getDisplayName(TextStyle.SHORT, TimeUtils.locale)
             }
             addHourCard(container, hourEntry, time)
             prevDay = day
