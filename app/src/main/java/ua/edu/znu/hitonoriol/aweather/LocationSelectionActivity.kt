@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -35,10 +36,7 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import kotlinx.coroutines.launch
 import ua.edu.znu.hitonoriol.aweather.databinding.ActivityLocationSelectionBinding
-import ua.edu.znu.hitonoriol.aweather.util.getPrefs
-import ua.edu.znu.hitonoriol.aweather.util.getStringPreference
-import ua.edu.znu.hitonoriol.aweather.util.putDouble
-import ua.edu.znu.hitonoriol.aweather.util.showSnackbar
+import ua.edu.znu.hitonoriol.aweather.util.*
 import java.io.IOException
 import java.util.*
 
@@ -47,6 +45,8 @@ import java.util.*
  */
 class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityLocationSelectionBinding
+
+    private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var geocoder: Geocoder
     private lateinit var locationFragment: AutocompleteSupportFragment
@@ -70,8 +70,18 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityLocationSelectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.locSelToolbar)
+
+        locationPermissionRequest = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            if (!permissions.containsKey(Manifest.permission.ACCESS_COARSE_LOCATION)
+                && !permissions.containsKey(Manifest.permission.ACCESS_FINE_LOCATION)
+            ) {
+                showSnackbar(binding.root, R.string.error_location_perms)
+            }
+        }
         locationClient = LocationServices.getFusedLocationProviderClient(this)
-        geocoder = Geocoder(this)
+        geocoder = Geocoder(this, TimeUtils.locale)
         mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         initLocationAutocomplete()
@@ -201,20 +211,11 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun requestLocationPermissions() {
-        val locationPermissionRequest = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            if (!permissions.containsKey(Manifest.permission.ACCESS_COARSE_LOCATION)
-                && !permissions.containsKey(Manifest.permission.ACCESS_FINE_LOCATION)
-            ) {
-                showSnackbar(binding.root, R.string.error_location_perms)
-            }
-        }
-
         locationPermissionRequest.launch(
             arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
             )
         )
     }
