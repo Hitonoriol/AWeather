@@ -4,7 +4,6 @@ import android.util.Log
 import ua.edu.znu.hitonoriol.aweather.util.TimeUtils
 import ua.edu.znu.hitonoriol.aweather.util.toLocalZone
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.*
 
@@ -67,11 +66,11 @@ class DailyForecast(hourlyForecast: HourlyWeatherForecast? = null) {
         val weatherIcon: String
             get() = primaryWeatherCondition!!.icon
 
-        fun getString() : String {
+        fun getString() : String? {
             if (TimeUtils.localDateTime(System.currentTimeMillis() / 1000).toLocalDate() == date)
-                return "Today"
+                return null
 
-            return "${date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${date.dayOfMonth}"
+            return "${date.dayOfWeek.getDisplayName(TextStyle.FULL, TimeUtils.locale)} ${date.dayOfMonth}"
         }
     }
 }

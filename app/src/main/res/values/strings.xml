@@ -25,7 +25,21 @@
     <string name="humidity">%d%%</string>
 
     <string name="time_now">Now</string>
+    <string name="date_now">Today</string>
     <string name="card_details">Details</string>
 
     <string name="gps_button_description">GPS location button</string>
+
+    <string name="msg_gps">Determining your current location...</string>
+    <string name="msg_app_reset">Reset application database and preferences successfully!</string>
+    <string name="msg_update_success">Weather data updated!</string>
+
+    <string name="error_no_internet">No internet connection.</string>
+    <string name="error_empty_response">Weather service returned an empty response.</string>
+    <string name="error_update_unknown">An unknown error has occurred during the weather update.</string>
+
+    <string name="error_geocoding">Cannot retrieve your current city / country name.</string>
+    <string name="error_no_location">No location is selected!</string>
+    <string name="error_location_perms">Location permission is required to use this feature.</string>
+    <string name="error_gps">Cannot get your current location.</string>
 </resources>

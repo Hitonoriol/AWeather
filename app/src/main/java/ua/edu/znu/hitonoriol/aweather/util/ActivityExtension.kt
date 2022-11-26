@@ -2,6 +2,8 @@ package ua.edu.znu.hitonoriol.aweather.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.view.View
+import com.google.android.material.snackbar.Snackbar
 import ua.edu.znu.hitonoriol.aweather.R
 
 /**
@@ -39,4 +41,12 @@ fun Context.getStringPreference(keyStringId: Int): String? {
  */
 fun Context.getDoublePreference(keyStringId: Int): Double {
     return getPrefs().getDouble(getString(keyStringId), .0)
+}
+
+fun Context.showSnackbar(view: View, message: String, duration: Int = Snackbar.LENGTH_LONG) {
+    Snackbar.make(view, message, duration).show()
+}
+
+fun Context.showSnackbar(view: View, messageStringId: Int, length: Int = Snackbar.LENGTH_LONG) {
+    showSnackbar(view, getString(messageStringId), length)
 }

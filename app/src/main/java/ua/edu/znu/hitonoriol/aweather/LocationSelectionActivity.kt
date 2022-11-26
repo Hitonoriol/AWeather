@@ -3,6 +3,7 @@ package ua.edu.znu.hitonoriol.aweather
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -32,12 +33,13 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import ua.edu.znu.hitonoriol.aweather.databinding.ActivityLocationSelectionBinding
 import ua.edu.znu.hitonoriol.aweather.util.getPrefs
 import ua.edu.znu.hitonoriol.aweather.util.getStringPreference
 import ua.edu.znu.hitonoriol.aweather.util.putDouble
+import ua.edu.znu.hitonoriol.aweather.util.showSnackbar
+import java.io.IOException
 import java.util.*
 
 /**
@@ -139,16 +141,19 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun saveLocation(coordinates: LatLng, onSuccess: () -> Unit = {}) {
         enableButtons(false)
         lifecycleScope.launch {
-            val locationList =
-                geocoder.getFromLocation(coordinates.latitude, coordinates.longitude, 1)
-            if (locationList == null || locationList.isEmpty()) {
-                runOnUiThread {
-                    Snackbar.make(
-                        binding.root,
-                        "Cannot retrieve your current city / country name.",
-                        Snackbar.LENGTH_LONG
-                    ).show()
+            val locationList: MutableList<Address>?
+            try {
+                locationList =
+                    geocoder.getFromLocation(coordinates.latitude, coordinates.longitude, 1)
+                if (locationList == null || locationList.isEmpty()) {
+                    runOnUiThread {
+                        showSnackbar(binding.root, R.string.error_geocoding)
+                    }
+                    return@launch
                 }
+            } catch (e: IOException) {
+                e.printStackTrace()
+                showSnackbar(binding.root, R.string.error_no_internet)
                 return@launch
             }
 
@@ -181,7 +186,7 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun applyLocation() {
         if (city.isEmpty() || country.isEmpty() || coordinates == null) {
-            Snackbar.make(binding.root, "No location is selected!", Snackbar.LENGTH_LONG).show()
+            showSnackbar(binding.root, R.string.error_no_location)
             return
         }
 
@@ -202,11 +207,7 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
             if (!permissions.containsKey(Manifest.permission.ACCESS_COARSE_LOCATION)
                 && !permissions.containsKey(Manifest.permission.ACCESS_FINE_LOCATION)
             ) {
-                Snackbar.make(
-                    binding.root,
-                    "This application requires location access to retrieve weather data",
-                    Snackbar.LENGTH_LONG
-                ).show()
+                showSnackbar(binding.root, R.string.error_location_perms)
             }
         }
 
@@ -234,8 +235,7 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
             requestLocationPermissions()
         }
         enableButtons(false)
-        Snackbar.make(binding.root, "Determining your current location...", Snackbar.LENGTH_LONG)
-            .show()
+        showSnackbar(binding.root, R.string.msg_gps)
         locationClient.getCurrentLocation(
             Priority.PRIORITY_HIGH_ACCURACY,
             object : CancellationToken() {
@@ -247,11 +247,7 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
             .addOnSuccessListener { location: Location? ->
                 runOnUiThread { enableButtons(true) }
                 if (location == null)
-                    Snackbar.make(
-                        binding.root,
-                        "Cannot get current location.",
-                        Snackbar.LENGTH_LONG
-                    ).show()
+                    showSnackbar(binding.root, R.string.error_gps)
                 else
                     action(LatLng(location.latitude, location.longitude))
             }
@@ -284,7 +280,7 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             override fun onError(status: Status) {
-                Log.i(TAG, "Places autocomplete error: $status")
+                Log.e(TAG, "Places autocomplete error: $status")
             }
         })
     }

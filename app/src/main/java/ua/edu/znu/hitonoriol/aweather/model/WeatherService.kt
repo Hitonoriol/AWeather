@@ -2,7 +2,6 @@ package ua.edu.znu.hitonoriol.aweather.model
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import retrofit2.Call
@@ -71,14 +70,6 @@ class WeatherService(private val apiKey: String, private val context: Context) {
     }
 
     /**
-     * Default action that is called on update failure before calling the user-supplied action.
-     */
-    private fun updateFailed() {
-        Toast.makeText(context, "Weather update failed.", Toast.LENGTH_LONG).show()
-        Log.w(TAG, "Weather update failed")
-    }
-
-    /**
      * Check whether current weather data needs to be updated or not.
      * Returns true if one of the following checks is true:
      *  1. Data is invalid (at least one of the internal forecast objects is null)
@@ -100,7 +91,7 @@ class WeatherService(private val apiKey: String, private val context: Context) {
      */
     fun update(
         onSuccess: (LocalWeather) -> Unit,
-        onFailure: () -> Unit = {}
+        onFailure: (Throwable?) -> Unit = {}
     ) {
 
         if (!needsUpdate()) {
@@ -116,15 +107,13 @@ class WeatherService(private val apiKey: String, private val context: Context) {
         fetchCurrentWeather()
             .execute({ weather ->
                 if (weather == null) {
-                    updateFailed()
-                    onFailure()
+                    onFailure(null)
                     return@execute
                 }
                 this.weather.currentForecast = weather
                 fetchHourlyForecast().execute({ forecast ->
                     if (forecast == null) {
-                        updateFailed()
-                        onFailure()
+                        onFailure(null)
                     } else {
                         this.weather.lastUpdate = System.currentTimeMillis()
                         this.weather.hourlyForecast = forecast
@@ -135,6 +124,8 @@ class WeatherService(private val apiKey: String, private val context: Context) {
                         onSuccess(this.weather)
                     }
                 })
+            }, { exception ->
+                onFailure(exception)
             })
     }
 

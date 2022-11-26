@@ -11,7 +11,6 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ua.edu.znu.hitonoriol.aweather.databinding.ActivityWeatherBinding
@@ -23,10 +22,8 @@ import ua.edu.znu.hitonoriol.aweather.model.data.DailyForecast
 import ua.edu.znu.hitonoriol.aweather.model.data.HourlyWeatherForecast
 import ua.edu.znu.hitonoriol.aweather.model.data.WeatherForecast
 import ua.edu.znu.hitonoriol.aweather.persist.LocalWeather
-import ua.edu.znu.hitonoriol.aweather.util.TimeUtils
-import ua.edu.znu.hitonoriol.aweather.util.capitalizeFirst
-import ua.edu.znu.hitonoriol.aweather.util.getStringPreference
-import ua.edu.znu.hitonoriol.aweather.util.toLocalZone
+import ua.edu.znu.hitonoriol.aweather.util.*
+import java.net.UnknownHostException
 import java.time.LocalDateTime
 import java.time.format.TextStyle
 import java.util.*
@@ -49,8 +46,7 @@ class WeatherActivity : AppCompatActivity() {
         binding = ActivityWeatherBinding.inflate(layoutInflater)
         weatherService = WeatherService(resources.getString(R.string.owm_api_key), this)
         setContentView(binding.root)
-        binding.toolbarLayout.alpha = alphaTransparent
-        binding.weatherContainer.alpha = alphaTransparent
+        setWeatherVisible(false)
         setSupportActionBar(findViewById(R.id.toolbar))
         binding.swipeRefresh.setOnRefreshListener {
             refresh()
@@ -68,12 +64,36 @@ class WeatherActivity : AppCompatActivity() {
         } else { // Restore weather data associated with the saved location and populate current layout with it.
             Log.i(localClassName, "Restoring saved location from previous launch...")
             lifecycleScope.launch(Dispatchers.IO) {
+                var warmStart = false
+                /* Populate the layout with previously fetched data */
                 weatherService.restoreLocation { oldData ->
-                    runOnUiThread { refresh(oldData) }
+                    warmStart = true
+                    runOnUiThread {
+                        refresh(oldData)
+                        fadeIn()
+                    }
                 }
-                runOnUiThread { fadeOut { refresh() } }
+                /* Refresh the layout with new data if needed */
+                runOnUiThread {
+                    /* Fade-out the layout before refreshing only if weather data for this location
+                     * has never been fetched before */
+                    if (!warmStart)
+                        fadeOut { refresh() }
+                    else
+                        refresh()
+                }
             }
         }
+    }
+
+    private fun setWeatherVisible(visible: Boolean) {
+        val alpha = if (visible) alphaOpaque else alphaTransparent
+        binding.toolbarLayout.alpha = alpha
+        binding.weatherContainer.alpha = alpha
+    }
+
+    private fun setRefreshing(refreshing: Boolean) {
+        binding.swipeRefresh.isRefreshing = refreshing
     }
 
     private fun fadeIn(onFinish: () -> Unit = {}) {
@@ -125,11 +145,7 @@ class WeatherActivity : AppCompatActivity() {
             R.id.resetAppBtn -> {
                 lifecycleScope.launch(Dispatchers.IO) {
                     weatherService.reset()
-                    Snackbar.make(
-                        binding.root,
-                        "Reset application database and preferences successfully!",
-                        Snackbar.LENGTH_LONG
-                    ).show()
+                    showSnackbar(binding.root, R.string.msg_app_reset)
                 }
                 return true
             }
@@ -147,14 +163,28 @@ class WeatherActivity : AppCompatActivity() {
      */
     private fun refresh() {
         Log.e(localClassName, "refresh()")
-        binding.swipeRefresh.isRefreshing = true
+        setRefreshing(true)
         weatherService.update({ weather ->
             runOnUiThread {
                 refresh(weather)
                 fadeIn()
-                binding.swipeRefresh.isRefreshing = false
-                Snackbar.make(binding.root, "Weather data updated!", Snackbar.LENGTH_LONG).show()
+                setRefreshing(false)
+                showSnackbar(binding.root, R.string.msg_update_success)
             }
+        }, { exception ->
+            setRefreshing(false)
+            if (exception == null) {
+                showSnackbar(binding.root, R.string.error_empty_response)
+                return@update
+            }
+            exception.printStackTrace()
+            showSnackbar(
+                binding.root,
+                if (exception is UnknownHostException)
+                    R.string.error_no_internet
+                else
+                    R.string.error_update_unknown
+            )
         })
     }
 
@@ -209,7 +239,7 @@ class WeatherActivity : AppCompatActivity() {
         forecast.days.forEach { (date, day) ->
             Log.d(localClassName, "Creating a new daily forecast row ($date): $day")
             val dayRow = DayForecastRowBinding.inflate(layoutInflater)
-            dayRow.dayView.text = day.getString()
+            dayRow.dayView.text = day.getString() ?: getString(R.string.date_now)
             dayRow.dayConditionView.text = day.weatherDescription
             dayRow.dayTempView.text = getString(R.string.temp_min_max, day.minTemp, day.maxTemp)
             dayRow.dayWeatherImg.setImageResource(getWeatherIcon(day.weatherIcon))
