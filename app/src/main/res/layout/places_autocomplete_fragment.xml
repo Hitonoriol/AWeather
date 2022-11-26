@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -18,7 +19,8 @@
       android:backgroundTint="?attr/colorPrimaryVariant"
       android:contentDescription="@string/places_autocomplete_search_hint"
       android:padding="@dimen/places_autocomplete_button_padding"
-      android:src="@drawable/quantum_ic_search_grey600_24" />
+      android:src="@drawable/quantum_ic_search_grey600_24"
+      app:tint="#FFFFFF" />
 
   <EditText
       android:id="@+id/places_autocomplete_search_input"
@@ -50,6 +52,7 @@
       android:backgroundTint="?attr/colorPrimaryVariant"
       android:contentDescription="@string/places_autocomplete_clear_button"
       android:padding="@dimen/places_autocomplete_button_padding"
-      android:src="@drawable/quantum_ic_clear_grey600_24" />
+      android:src="@drawable/quantum_ic_clear_grey600_24"
+      app:tint="#FFFFFF" />
 
 </LinearLayout>
