@@ -1,15 +1,14 @@
 package ua.edu.znu.hitonoriol.aweather
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginResult
-import com.facebook.login.widget.LoginButton
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -25,14 +24,37 @@ import ua.edu.znu.hitonoriol.aweather.databinding.ActivityLoginBinding
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
 
-    private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var googleSignInButton: SignInButton
 
+    /* Facebook sign in activity result callback dispatcher and a simple callback
+     * for sign in result indication. */
     private lateinit var facebookCallbackManager: CallbackManager
-    private lateinit var facebookSignInButton: LoginButton
+    private val facebookSignInCallback = object : FacebookCallback<LoginResult> {
+        override fun onSuccess(result: LoginResult) {
+            performFacebookSignIn(result)
+        }
 
-    companion object {
-        private const val RC_SIGN_IN = 1337
+        override fun onCancel() {
+            signInFailed("Facebook (cancelled)")
+        }
+
+        override fun onError(error: FacebookException) {
+            signInFailed("Facebook")
+        }
+    }
+
+    /* Google auth client and activity result callback for sign in result indication. */
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private val googleSignInCallback = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            performGoogleSignIn(task.getResult(ApiException::class.java))
+        } catch (e: ApiException) {
+            signInFailed("Google")
+            e.printStackTrace()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,25 +73,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun initFacebookSignIn() {
         facebookCallbackManager = CallbackManager.Factory.create()
-        facebookSignInButton = binding.facebookBtn
-        facebookSignInButton.registerCallback(
-            facebookCallbackManager,
-            object : FacebookCallback<LoginResult> {
-                override fun onSuccess(result: LoginResult?) {
-                    if (result != null)
-                        performFacebookSignIn(result)
-                    else
-                        onError(null)
-                }
-
-                override fun onCancel() {
-                    onError(null)
-                }
-
-                override fun onError(error: FacebookException?) {
-                    signInFailed("Facebook")
-                }
-            })
+        binding.facebookBtn.registerCallback(facebookCallbackManager, facebookSignInCallback)
     }
 
     private fun initGoogleSignIn() {
@@ -80,7 +84,7 @@ class LoginActivity : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
         googleSignInButton = binding.googleBtn
         googleSignInButton.setOnClickListener {
-            startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
+            googleSignInCallback.launch(googleSignInClient.signInIntent)
         }
     }
 
@@ -104,23 +108,5 @@ class LoginActivity : AppCompatActivity() {
             "Failed to sign in via $method.",
             Snackbar.LENGTH_LONG
         ).show()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (facebookCallbackManager.onActivityResult(requestCode, resultCode, data))
-            return
-
-        when (requestCode) {
-            RC_SIGN_IN -> {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-                try {
-                    performGoogleSignIn(task.getResult(ApiException::class.java))
-                } catch (e: ApiException) {
-                    signInFailed("Google")
-                    e.printStackTrace()
-                }
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data)
     }
 }
