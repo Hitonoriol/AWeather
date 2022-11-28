@@ -37,6 +37,9 @@ import ua.edu.znu.hitonoriol.aweather.util.*
 import java.io.IOException
 import java.util.*
 
+private fun Map<String, Boolean>.isGranted(permission: String): Boolean =
+    getOrDefault(permission, false)
+
 /**
  * Activity for selecting a city to retrieve weather data for.
  */
@@ -67,8 +70,8 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
     private val locationRequester = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        if (!permissions.containsKey(Manifest.permission.ACCESS_COARSE_LOCATION)
-            && !permissions.containsKey(Manifest.permission.ACCESS_FINE_LOCATION)
+        if (!permissions.isGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
+            && !permissions.isGranted(Manifest.permission.ACCESS_FINE_LOCATION)
         ) {
             showSnackbar(binding.root, R.string.error_location_perms)
             return@registerForActivityResult
