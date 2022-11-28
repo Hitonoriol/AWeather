@@ -2,7 +2,6 @@ package ua.edu.znu.hitonoriol.aweather
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
@@ -10,10 +9,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentManager.TAG
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.Status
@@ -46,7 +43,6 @@ import java.util.*
 class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityLocationSelectionBinding
 
-    private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var geocoder: Geocoder
     private lateinit var locationFragment: AutocompleteSupportFragment
@@ -65,21 +61,33 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
     private val locationString
         get() = "$city, $country"
 
+    /* Activity result callback to be executed after performing a location permission request.
+     * Retrieves device's current location on success
+     *  or shows a snackbar with an error message on failure. */
+    private val locationRequester = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (!permissions.containsKey(Manifest.permission.ACCESS_COARSE_LOCATION)
+            && !permissions.containsKey(Manifest.permission.ACCESS_FINE_LOCATION)
+        ) {
+            showSnackbar(binding.root, R.string.error_location_perms)
+            return@registerForActivityResult
+        }
+
+        getCurrentLocation { coordinates ->
+            if (gMap != null)
+                panMapTo(coordinates)
+            else
+                saveLocation(coordinates)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLocationSelectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.locSelToolbar)
 
-        locationPermissionRequest = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            if (!permissions.containsKey(Manifest.permission.ACCESS_COARSE_LOCATION)
-                && !permissions.containsKey(Manifest.permission.ACCESS_FINE_LOCATION)
-            ) {
-                showSnackbar(binding.root, R.string.error_location_perms)
-            }
-        }
         locationClient = LocationServices.getFusedLocationProviderClient(this)
         geocoder = Geocoder(this, TimeUtils.locale)
         mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -88,12 +96,7 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
         restoreSavedLocation()
 
         binding.currentLocationBtn.setOnClickListener {
-            getCurrentLocation { coordinates ->
-                if (gMap != null)
-                    panMapTo(coordinates)
-                else
-                    saveLocation(coordinates)
-            }
+            requestCurrentLocation()
         }
 
         binding.applyLocationBtn.setOnClickListener {
@@ -210,8 +213,8 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
         finish()
     }
 
-    private fun requestLocationPermissions() {
-        locationPermissionRequest.launch(
+    private fun requestCurrentLocation() {
+        locationRequester.launch(
             arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -225,16 +228,6 @@ class LocationSelectionActivity : AppCompatActivity(), OnMapReadyCallback {
      * the `action` consumer.
      */
     private fun getCurrentLocation(action: (LatLng) -> Unit) {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestLocationPermissions()
-        }
         enableButtons(false)
         showSnackbar(binding.root, R.string.msg_gps)
         locationClient.getCurrentLocation(
